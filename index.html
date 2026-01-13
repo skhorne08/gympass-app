@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4F46E5">
+  <title>GymPass - Train Anywhere</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function GymPassApp() {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [authView, setAuthView] = useState('login');
+      const [view, setView] = useState('browse');
+      const [selectedGym, setSelectedGym] = useState(null);
+      const [selectedDay, setSelectedDay] = useState('Monday');
+      const [showMenu, setShowMenu] = useState(false);
+      const [userBookings, setUserBookings] = useState([]);
+      const [loginEmail, setLoginEmail] = useState('');
+      const [loginPassword, setLoginPassword] = useState('');
+
+      const gyms = [
+        {
+          id: 1,
+          name: 'Barcelona Fight Academy',
+          distance: '0.8 km',
+          disciplines: ['BJJ', 'MMA', 'Muay Thai'],
+          rating: 4.8,
+          reviews: 124,
+          credits: 1,
+          image: '🥋',
+          address: 'Carrer de València, 234',
+          schedule: [
+            { 
+              day: 'Monday', 
+              classes: [
+                { time: '07:00', name: 'Morning BJJ', instructor: 'Carlos Silva', credits: 1, id: 1 },
+                { time: '12:00', name: 'Lunchtime MMA', instructor: 'Mike Torres', credits: 1, id: 2 }
+              ]
+            },
+            { 
+              day: 'Tuesday', 
+              classes: [
+                { time: '07:00', name: 'Morning Muay Thai', instructor: 'Thai Master Lee', credits: 1, id: 3 }
+              ]
+            }
+          ]
+        },
+        {
+          id: 2,
+          name: 'Gracie Barra Barcelona',
+          distance: '1.2 km',
+          disciplines: ['BJJ'],
+          rating: 4.9,
+          reviews: 89,
+          credits: 1,
+          image: '🥋',
+          address: 'Avinguda Diagonal, 401',
+          schedule: [
+            { 
+              day: 'Monday', 
+              classes: [
+                { time: '19:00', name: 'All Levels Gi', instructor: 'Professor João', credits: 1, id: 4 }
+              ]
+            }
+          ]
+        },
+        {
+          id: 3,
+          name: 'Kombat Group BCN',
+          distance: '2.1 km',
+          disciplines: ['Muay Thai', 'Boxing'],
+          rating: 4.7,
+          reviews: 156,
+          credits: 1,
+          image: '🥊',
+          address: 'Carrer de Muntaner, 156',
+          schedule: [
+            { 
+              day: 'Monday', 
+              classes: [
+                { time: '08:00', name: 'Morning Muay Thai', instructor: 'Kru Somchai', credits: 1, id: 5 }
+              ]
+            }
+          ]
+        }
+      ];
+
+      const handleLogin = () => {
+        if (loginEmail && loginPassword) {
+          setCurrentUser({
+            id: 1,
+            name: loginEmail.split('@')[0],
+            email: loginEmail,
+            credits: 12,
+            profilePic: '👤',
+            discipline: 'BJJ'
+          });
+        }
+      };
+
+      const handleLogout = () => {
+        setCurrentUser(null);
+        setAuthView('login');
+        setView('browse');
+      };
+
+      const bookClass = (gym, cls) => {
+        if (currentUser.credits >= cls.credits) {
+          const booking = {
+            id: Date.now(),
+            gymName: gym.name,
+            class: cls,
+            date: 'Today'
+          };
+          setUserBookings([...userBookings, booking]);
+          setCurrentUser({...currentUser, credits: currentUser.credits - cls.credits});
+          alert('Class booked!');
+        } else {
+          alert('Not enough credits!');
+        }
+      };
+
+      if (!currentUser) {
+        return (
+          <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom right, #4F46E5, #6366F1)'}}>
+            <div style={{background: 'white', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', width: '100%', maxWidth: '28rem', padding: '2rem', margin: '1rem'}}>
+              {authView === 'login' && (
+                <div>
+                  <h1 style={{fontSize: '1.875rem', fontWeight: 'bold', textAlign: 'center', marginBottom: '0.5rem'}}>Welcome Back</h1>
+                  <p style={{color: '#6B7280', textAlign: 'center', marginBottom: '2rem'}}>Login to your account</p>
+                  
+                  <div style={{marginBottom: '1rem'}}>
+                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem'}}>Email</label>
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      style={{width: '100%', padding: '0.75rem 1rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem'}}
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  
+                  <div style={{marginBottom: '1rem'}}>
+                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem'}}>Password</label>
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      style={{width: '100%', padding: '0.75rem 1rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem'}}
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleLogin}
+                    style={{width: '100%', background: '#4F46E5', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', fontWeight: '600', border: 'none', cursor: 'pointer'}}
+                  >
+                    Login
+                  </button>
+                  
+                  <button
+                    onClick={() => setAuthView('signup')}
+                    style={{width: '100%', marginTop: '1.5rem', color: '#6B7280', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer'}}
+                  >
+                    Don't have an account? <span style={{color: '#4F46E5', fontWeight: '600'}}>Sign up</span>
+                  </button>
+                  
+                  <p style={{fontSize: '0.75rem', color: '#9CA3AF', textAlign: 'center', marginTop: '1.5rem'}}>Demo: Use any email (e.g., user@test.com)</p>
+                </div>
+              )}
+
+              {authView === 'signup' && (
+                <div>
+                  <button onClick={() => setAuthView('login')} style={{color: '#6B7280', marginBottom: '1rem', background: 'none', border: 'none', cursor: 'pointer'}}>← Back</button>
+                  <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem'}}>Create Account</h1>
+                  <p style={{color: '#6B7280', marginBottom: '1.5rem'}}>Start training at gyms near you</p>
+                  
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                    <input type="text" placeholder="Full Name" style={{width: '100%', padding: '0.75rem 1rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem'}} />
+                    <input type="email" placeholder="Email" style={{width: '100%', padding: '0.75rem 1rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem'}} />
+                    <input type="password" placeholder="Password" style={{width: '100%', padding: '0.75rem 1rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem'}} />
+                    <button 
+                      onClick={() => {
+                        setCurrentUser({
+                          id: Date.now(),
+                          name: 'Demo User',
+                          email: 'user@test.com',
+                          credits: 5,
+                          profilePic: '👤',
+                          discipline: 'BJJ'
+                        });
+                      }}
+                      style={{width: '100%', background: '#4F46E5', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', fontWeight: '600', border: 'none', cursor: 'pointer'}}
+                    >
+                      Create Account
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div style={{height: '100vh', maxWidth: '28rem', margin: '0 auto', background: 'white', display: 'flex', flexDirection: 'column'}}>
+          <div style={{background: '#4F46E5', color: 'white', padding: '1rem'}}>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+              <h1 style={{fontSize: '1.25rem', fontWeight: 'bold', margin: 0}}>GymPass</h1>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
+                <div style={{background: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                  <span style={{fontSize: '0.875rem', fontWeight: '600'}}>{currentUser.credits} credits</span>
+                </div>
+                <button onClick={() => setShowMenu(!showMenu)} style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.5rem'}}>
+                  ☰
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {showMenu && (
+            <div style={{position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50}} onClick={() => setShowMenu(false)}>
+              <div style={{position: 'absolute', right: 0, top: 0, bottom: 0, width: '18rem', background: 'white', padding: '1.5rem'}} onClick={(e) => e.stopPropagation()}>
+                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem'}}>
+                  <h2 style={{fontSize: '1.25rem', fontWeight: 'bold'}}>Menu</h2>
+                  <button onClick={() => setShowMenu(false)} style={{background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem'}}>×</button>
+                </div>
+                
+                <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #E5E7EB'}}>
+                  <div style={{fontSize: '2.5rem'}}>{currentUser.profilePic}</div>
+                  <div>
+                    <p style={{fontWeight: '600', margin: 0}}>{currentUser.name}</p>
+                    <p style={{fontSize: '0.875rem', color: '#6B7280', margin: 0}}>{currentUser.email}</p>
+                  </div>
+                </div>
+                
+                <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                  <button onClick={() => { setView('profile'); setShowMenu(false); }} style={{width: '100%', textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'none', border: 'none', cursor: 'pointer'}}>My Profile</button>
+                  <button onClick={() => { setView('bookings'); setShowMenu(false); }} style={{width: '100%', textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'none', border: 'none', cursor: 'pointer'}}>My Bookings</button>
+                  <button onClick={() => { setView('credits'); setShowMenu(false); }} style={{width: '100%', textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'none', border: 'none', cursor: 'pointer'}}>Buy Credits</button>
+                  <button onClick={handleLogout} style={{width: '100%', textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', marginTop: '1rem'}}>Logout</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div style={{flex: 1, overflowY: 'auto'}}>
+            {view === 'browse' && (
+              <div style={{padding: '1rem'}}>
+                <h2 style={{fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '1rem'}}>Nearby Gyms</h2>
+                
+                {gyms.map(gym => (
+                  <div key={gym.id} onClick={() => { setSelectedGym(gym); setView('gym-detail'); }} style={{background: 'white', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '1rem', marginBottom: '0.75rem', cursor: 'pointer', border: '1px solid #E5E7EB'}}>
+                    <div style={{display: 'flex', gap: '0.75rem'}}>
+                      <div style={{fontSize: '3rem'}}>{gym.image}</div>
+                      <div style={{flex: 1}}>
+                        <h3 style={{fontWeight: '600', marginBottom: '0.25rem'}}>{gym.name}</h3>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.875rem'}}>
+                          <span>⭐ {gym.rating}</span>
+                          <span style={{color: '#9CA3AF'}}>({gym.reviews})</span>
+                          <span style={{color: '#9CA3AF'}}>•</span>
+                          <span style={{color: '#6B7280'}}>📍 {gym.distance}</span>
+                        </div>
+                        <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem'}}>
+                          {gym.disciplines.map((d, i) => (
+                            <span key={i} style={{padding: '0.25rem 0.5rem', background: '#EEF2FF', color: '#4F46E5', fontSize: '0.75rem', borderRadius: '9999px', fontWeight: '500'}}>{d}</span>
+                          ))}
+                        </div>
+                        <div style={{color: '#4F46E5', fontSize: '0.875rem', fontWeight: '600'}}>{gym.credits} credit/class</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {view === 'gym-detail' && selectedGym && (
+              <div>
+                <div style={{background: 'linear-gradient(to bottom right, #4F46E5, #6366F1)', color: 'white', padding: '1.5rem'}}>
+                  <button onClick={() => setView('browse')} style={{marginBottom: '1rem', fontSize: '0.875rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer'}}>← Back</button>
+                  <div style={{fontSize: '4rem', marginBottom: '1rem'}}>{selectedGym.image}</div>
+                  <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem'}}>{selectedGym.name}</h1>
+                  <div style={{fontSize: '0.875rem', marginBottom: '0.25rem'}}>⭐ {selectedGym.rating} ({selectedGym.reviews} reviews)</div>
+                  <div style={{fontSize: '0.875rem', opacity: 0.9}}>{selectedGym.address}</div>
+                </div>
+
+                <div style={{padding: '1rem'}}>
+                  <h2 style={{fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '0.75rem'}}>Schedule</h2>
+                  <div style={{display: 'flex', gap: '0.5rem', marginBottom: '1rem', overflowX: 'auto'}}>
+                    {selectedGym.schedule.map((day) => (
+                      <button
+                        key={day.day}
+                        onClick={() => setSelectedDay(day.day)}
+                        style={{padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: selectedDay === day.day ? '#4F46E5' : '#F3F4F6', color: selectedDay === day.day ? 'white' : '#374151'}}
+                      >
+                        {day.day}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                    {selectedGym.schedule.find(s => s.day === selectedDay)?.classes.map((cls) => (
+                      <div key={cls.id} style={{background: 'white', borderRadius: '0.5rem', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #E5E7EB'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
+                          <span style={{fontWeight: 'bold'}}>🕐 {cls.time}</span>
+                        </div>
+                        <h3 style={{fontWeight: '600', marginBottom: '0.25rem'}}>{cls.name}</h3>
+                        <p style={{fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.75rem'}}>{cls.instructor}</p>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                          <span style={{color: '#4F46E5', fontWeight: '600'}}>{cls.credits} credit</span>
+                          <button
+                            onClick={() => bookClass(selectedGym, cls)}
+                            style={{background: '#4F46E5', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: '500', border: 'none', cursor: 'pointer'}}
+                          >
+                            Book Class
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {view === 'profile' && (
+              <div style={{padding: '1.5rem'}}>
+                <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>My Profile</h1>
+                <div style={{background: 'white', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '1.5rem', border: '1px solid #E5E7EB'}}>
+                  <div style={{fontSize: '4rem', marginBottom: '1.5rem'}}>{currentUser.profilePic}</div>
+                  
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                    <div>
+                      <label style={{fontSize: '0.875rem', fontWeight: '500', color: '#6B7280'}}>Name</label>
+                      <p style={{fontSize: '1.125rem', fontWeight: '600'}}>{currentUser.name}</p>
+                    </div>
+                    <div>
+                      <label style={{fontSize: '0.875rem', fontWeight: '500', color: '#6B7280'}}>Email</label>
+                      <p style={{fontSize: '1.125rem'}}>{currentUser.email}</p>
+                    </div>
+                    <div>
+                      <label style={{fontSize: '0.875rem', fontWeight: '500', color: '#6B7280'}}>Discipline</label>
+                      <p style={{fontSize: '1.125rem'}}>{currentUser.discipline}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {view === 'bookings' && (
+              <div style={{padding: '1.5rem'}}>
+                <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>My Bookings</h1>
+                {userBookings.length === 0 ? (
+                  <div style={{textAlign: 'center', paddingTop: '3rem', paddingBottom: '3rem'}}>
+                    <div style={{fontSize: '4rem', marginBottom: '1rem'}}>📅</div>
+                    <p style={{color: '#6B7280', marginBottom: '1rem'}}>No bookings yet</p>
+                    <button onClick={() => setView('browse')} style={{color: '#4F46E5', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer'}}>
+                      Browse Gyms
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                    {userBookings.map(booking => (
+                      <div key={booking.id} style={{background: 'white', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '1rem', border: '1px solid #E5E7EB'}}>
+                        <h3 style={{fontWeight: 'bold', marginBottom: '0.5rem'}}>{booking.gymName}</h3>
+                        <p style={{color: '#374151', marginBottom: '0.25rem'}}>{booking.class.name}</p>
+                        <div style={{display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6B7280'}}>
+                          <span>{booking.date}</span>
+                          <span>{booking.class.time}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {view === 'credits' && (
+              <div style={{padding: '1.5rem'}}>
+                <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>Buy Credits</h1>
+                <div style={{background: 'white', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '1.5rem', border: '2px solid #4F46E5'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
+                    <div>
+                      <h3 style={{fontSize: '1.5rem', fontWeight: 'bold'}}>10 Credits</h3>
+                      <p style={{color: '#6B7280'}}>Most popular</p>
+                    </div>
+                    <div style={{textAlign: 'right'}}>
+                      <p style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#4F46E5'}}>€80</p>
+                      <p style={{fontSize: '0.875rem', color: '#6B7280'}}>€8/credit</p>
+                    </div>
+                  </div>
+                  <button style={{width: '100%', background: '#4F46E5', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', fontWeight: '600', border: 'none', cursor: 'pointer'}}>
+                    Purchase
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<GymPassApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
