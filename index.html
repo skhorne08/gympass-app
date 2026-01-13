@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4F46E5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GymPass - Train Anywhere</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { overscroll-behavior-y: none; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="app" class="h-screen max-w-6xl mx-auto"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+  <script>
+    // Simple router and state management
+    let state = {
+      mode: 'user', // 'user' or 'gym'
+      view: 'browse',
+      selectedGym: null,
+      selectedDay: 'Monday',
+      selectedTab: 'overview'
+    };
+
+    const gyms = [
+      {
+        id: 1, name: 'Barcelona Fight Academy', distance: '0.8 km',
+        disciplines: ['BJJ', 'MMA', 'Muay Thai'], rating: 4.8, reviews: 124,
+        credits: 1, image: '🥋', address: 'Carrer de València, 234'
+      },
+      {
+        id: 2, name: 'Gracie Barra Barcelona', distance: '1.2 km',
+        disciplines: ['BJJ'], rating: 4.9, reviews: 89,
+        credits: 1, image: '🥋', address: 'Avinguda Diagonal, 401'
+      },
+      {
+        id: 3, name: 'Kombat Group BCN', distance: '2.1 km',
+        disciplines: ['Muay Thai', 'Boxing'], rating: 4.7, reviews: 156,
+        credits: 1, image: '🥊', address: 'Carrer de Muntaner, 156'
+      }
+    ];
+
+    function toggleMode() {
+      state.mode = state.mode === 'user' ? 'gym' : 'user';
+      render();
+    }
+
+    function selectGym(id) {
+      state.selectedGym = gyms.find(g => g.id === id);
+      state.view = 'gym-detail';
+      render();
+    }
+
+    function backToBrowse() {
+      state.view = 'browse';
+      render();
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (state.mode === 'user' && state.view === 'browse') {
+        app.innerHTML = `
+          <div class="h-full flex flex-col bg-white max-w-md mx-auto">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold">GymPass</h1>
+                <button onclick="toggleMode()" class="text-sm bg-white/20 px-3 py-1.5 rounded-full">
+                  Gym Owner Login
+                </button>
+              </div>
+              <div class="bg-white/10 rounded-lg px-4 py-2 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <input type="text" value="Barcelona, Spain" class="bg-transparent flex-1 outline-none" />
+              </div>
+              <div class="mt-4 bg-white/20 rounded-lg px-4 py-3 flex items-center justify-between">
+                <span class="font-semibold">Your Credits</span>
+                <span class="text-2xl font-bold">12</span>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4">
+              <h2 class="text-xl font-bold mb-4">Nearby Gyms</h2>
+              ${gyms.map(g => `
+                <div onclick="selectGym(${g.id})" class="bg-white rounded-xl shadow-md p-4 mb-4 cursor-pointer hover:shadow-lg transition-shadow border border-gray-100">
+                  <div class="flex gap-3">
+                    <div class="text-5xl">${g.image}</div>
+                    <div class="flex-1">
+                      <h3 class="font-bold text-lg mb-1">${g.name}</h3>
+                      <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">
+                        <span>⭐ ${g.rating} (${g.reviews})</span>
+                        <span>•</span>
+                        <span>📍 ${g.distance}</span>
+                      </div>
+                      <div class="flex gap-2 mb-2">
+                        ${g.disciplines.map(d => `
+                          <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-medium">${d}</span>
+                        `).join('')}
+                      </div>
+                      <div class="text-indigo-600 font-semibold">${g.credits} credit per class</div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (state.mode === 'user' && state.view === 'gym-detail') {
+        const gym = state.selectedGym;
+        app.innerHTML = `
+          <div class="h-full flex flex-col bg-gray-50 max-w-md mx-auto">
+            <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white p-6">
+              <button onclick="backToBrowse()" class="mb-4 text-sm">← Back</button>
+              <div class="text-6xl mb-3">${gym.image}</div>
+              <h1 class="text-2xl font-bold mb-2">${gym.name}</h1>
+              <div class="text-sm opacity-90">⭐ ${gym.rating} (${gym.reviews}) • 📍 ${gym.distance}</div>
+              <div class="text-sm opacity-80 mt-1">${gym.address}</div>
+              <div class="flex gap-2 mt-3">
+                ${gym.disciplines.map(d => `
+                  <span class="bg-white/20 px-3 py-1 rounded-full text-sm">${d}</span>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4">
+              <h2 class="text-xl font-bold mb-4">Sample Schedule - Monday</h2>
+              <div class="space-y-3">
+                ${['07:00 - Morning BJJ', '12:00 - Lunchtime MMA', '18:30 - Evening BJJ', '20:00 - Advanced Training'].map(cls => `
+                  <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                    <div class="font-bold mb-1">${cls}</div>
+                    <div class="text-sm text-gray-600 mb-2">Instructor: Carlos Silva</div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-indigo-600 font-semibold">1 credit</span>
+                      <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Book</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Gym Dashboard
+        app.innerHTML = `
+          <div class="h-full flex flex-col bg-gray-50">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-6">
+              <div class="flex justify-between items-center mb-4">
+                <div>
+                  <h1 class="text-2xl font-bold">Barcelona Fight Academy</h1>
+                  <p class="text-sm opacity-90">Owner Dashboard</p>
+                </div>
+                <button onclick="toggleMode()" class="text-sm bg-white/20 px-3 py-1.5 rounded-full">
+                  User View
+                </button>
+              </div>
+              
+              <div class="grid grid-cols-4 gap-4 mt-4">
+                <div class="bg-white/10 rounded-lg p-3">
+                  <div class="text-2xl font-bold">87</div>
+                  <div class="text-xs opacity-90">Monthly Visits</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-3">
+                  <div class="text-2xl font-bold">€2,610</div>
+                  <div class="text-xs opacity-90">Revenue</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-3">
+                  <div class="text-2xl font-bold">87</div>
+                  <div class="text-xs opacity-90">Credits Used</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-3">
+                  <div class="text-2xl font-bold">+23%</div>
+                  <div class="text-xs opacity-90">Growth</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6">
+              <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-5 shadow-sm">
+                  <h2 class="text-lg font-bold mb-4">Today's Bookings</h2>
+                  ${['Alex M. - Morning BJJ - 07:00', 'Sarah K. - Evening BJJ - 18:30', 'Mike T. - Muay Thai - 20:00'].map(b => `
+                    <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                      <div class="font-semibold text-sm">${b.split(' - ')[0]}</div>
+                      <div class="text-xs text-gray-600">${b.split(' - ')[1]}</div>
+                      <div class="text-xs text-gray-500">${b.split(' - ')[2]}</div>
+                      <div class="mt-2">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Confirmed</span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm">
+                  <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
+                  ${[
+                    {name: 'Jordan S.', action: 'Checked in', time: '2 hours ago'},
+                    {name: 'Amanda W.', action: 'Left 5-star review', time: '5 hours ago'},
+                    {name: 'Ryan M.', action: 'Booked class', time: '1 day ago'}
+                  ].map(a => `
+                    <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                      <div class="font-semibold text-sm">${a.name}</div>
+                      <div class="text-xs text-gray-600">${a.action}</div>
+                      <div class="text-xs text-gray-400 mt-1">${a.time}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-5 shadow-sm mt-6">
+                <h2 class="text-lg font-bold mb-4">Weekly Performance</h2>
+                <div class="flex items-end justify-between gap-4 h-48">
+                  ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
+                    const heights = [75, 60, 90, 70, 55, 45, 40];
+                    return `
+                      <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-indigo-200 rounded-t-lg" style="height: ${heights[i]}%"></div>
+                        <span class="text-sm mt-2">${day}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Re-attach lucide icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    // Initial render
+    render();
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('Service Worker registered'))
+          .catch(err => console.log('SW registration failed'));
+      });
+    }
+  </script>
+</body>
+</html>
